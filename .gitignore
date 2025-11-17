@@ -1,0 +1,8 @@
+.idea/
+.code/
+bin/
+tmp/
+img/
+test/
+*.tgz
+CLAUDE.md
