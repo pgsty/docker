@@ -8,7 +8,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip tzdata && \
     ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo 'Asia/Shanghai' > /etc/timezone && \
-    curl https://repo.pigsty.cc/pig | bash -s v0.7.2 && \
+    curl https://repo.pigsty.cc/pig | bash -s v1.0.0  && \
     pig repo add --remove && apt-get clean
 
 FROM mini AS full

@@ -3,6 +3,8 @@
 bin/
 tmp/
 img/
+pkg/
+
 test/
 *.tgz
 CLAUDE.md
