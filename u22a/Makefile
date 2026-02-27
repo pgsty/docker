@@ -1,49 +1,60 @@
-IMG=u22a
+REPO=pgsty
+NAME=u22a
+IMG=$(REPO)/$(NAME)
 ARCH=arm64
+CTN=$(NAME)
+CTN_BASE=$(NAME)-base
 
 default: exec
 
 # Init
 exec:
-	docker exec -it $(IMG) /bin/bash
-init: full exec
-mini:
-	docker run --name=$(IMG) --platform=linux/$(ARCH) -d -it $(IMG):mini /bin/bash
-full:
-	docker run --name=$(IMG) --platform=linux/$(ARCH) -d -it $(IMG):full /bin/bash
+	docker exec -it $(CTN) /bin/bash
+init: run-build exec
+run-base:
+	docker run --name=$(CTN_BASE) --platform=linux/$(ARCH) -d -it $(IMG) /bin/bash
+run-build:
+	docker run --name=$(CTN) --platform=linux/$(ARCH) -d -it $(IMG):build /bin/bash
 
 # Containers
-clean: stop rm
+clean: stop rm stop-base rm-base
 start:
-	docker start $(IMG)
+	docker start $(CTN)
 stop:
-	docker stop $(IMG)
+	-docker stop $(CTN)
 rm:
-	docker rm $(IMG)
+	-docker rm $(CTN)
+start-base:
+	docker start $(CTN_BASE)
+stop-base:
+	-docker stop $(CTN_BASE)
+rm-base:
+	-docker rm $(CTN_BASE)
 
 # Specs
 meta: exts spec
 exts:
-	docker cp ~/pgsty/pgext/db/extension.csv $(IMG):/root/.pig/extension.csv
+	docker cp ~/pgsty/pgext/db/extension.csv $(CTN):/root/.pig/extension.csv
 spec:
-	docker exec -it $(IMG) rm -rf /root/ext/debbuild
-	docker cp -a ~/pgsty/deb/debbuild $(IMG):/root/ext/debbuild
-	docker exec -it $(IMG) rsync -avz /root/ext/debbuild/ /root/debbuild/
+	docker exec -it $(CTN) rm -rf /root/ext/debbuild
+	docker cp -a ~/pgsty/deb/debbuild $(CTN):/root/ext/debbuild
+	docker exec -it $(CTN) rsync -avz /root/ext/debbuild/ /root/debbuild/
 
 # Images
 save:
-	docker save $(IMG):latest | gzip -c > $(IMG).tgz
+	docker save $(IMG):build | gzip -c > $(NAME).tgz
 load:
-	cat $(IMG).tgz | gzip -d -c - | docker load
+	cat $(NAME).tgz | gzip -d -c - | docker load
 rmi:
-	docker rmi   $(IMG):mini
-	docker rmi   $(IMG):full
+	-docker rmi $(IMG):build
+	-docker rmi $(IMG):latest
+	-docker rmi $(IMG)
 
 # Building
-build: build-mini build-full
-build-mini:
-	docker build --no-cache --platform=linux/$(ARCH) --target mini -t $(IMG):mini -f Dockerfile .
-build-full:
-	docker build --no-cache --platform=linux/$(ARCH) --target full -t $(IMG):full -f Dockerfile .
+build: build-base build-build
+build-base:
+	docker build --platform=linux/$(ARCH) --target base -t $(IMG):latest -t $(IMG) -f Dockerfile .
+build-build:
+	docker build --platform=linux/$(ARCH) --target build -t $(IMG):build -f Dockerfile .
 pull:
 	docker pull --platform=linux/$(ARCH) ubuntu:22.04
