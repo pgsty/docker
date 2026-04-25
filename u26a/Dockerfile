@@ -76,19 +76,25 @@ STOPSIGNAL SIGRTMIN+3
 CMD ["/lib/systemd/systemd"]
 
 FROM base AS build
-RUN apt-get update \
+RUN find /etc/apt -maxdepth 2 -type f \( -name 'sources.list' -o -name '*.list' -o -name '*.sources' \) \
+        -exec sed -ri 's|https?://mirrors.aliyun.com/ubuntu-ports/?|https://mirrors.ustc.edu.cn/ubuntu-ports/|g' {} + \
+    && apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config gnupg \
     && (apt-get purge -y needrestart || true) \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.0 \
-    && pig sty init -f \
     && install -d /etc/apt/keyrings /usr/share/postgresql-common/pgdg \
     && curl -fsSL https://repo.pigsty.cc/key | gpg --dearmor -o /etc/apt/keyrings/pigsty.gpg \
     && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
-    && pig repo add -ru --region=china \
+    && printf 'deb [signed-by=/etc/apt/keyrings/pigsty.gpg] https://repo.pigsty.cc/apt/infra/ generic main\n' > /etc/apt/sources.list.d/infra.list \
+    && printf 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://mirrors.aliyun.com/postgresql/repos/apt/ resolute-pgdg main\n' > /etc/apt/sources.list.d/pgsql.list \
+    && apt-get update \
+    && apt-get install -y \
+        make cmake ninja-build pkg-config lld git lz4 unzip ncdu rsync vray jq debhelper devscripts fakeroot \
+        libreadline-dev zlib1g-dev libxml2-dev libxslt1-dev liblz4-dev libzstd-dev libkrb5-dev \
+        postgresql-all postgresql-server-dev-all \
+    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.0 \
+    && pig sty init -f \
     && pig sty boot -r china \
     && pig sty conf -c rich -r china \
-    && pig repo add -ru --region=china \
-    && pig build tool \
     && pig build spec \
     && install -d /root/.cargo \
     && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
