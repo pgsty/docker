@@ -13,6 +13,7 @@ RUN groupadd -g 543 postgres && useradd -u 543 -g 543 -m -s /bin/bash postgres
 RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d \
     && chmod +x /usr/sbin/policy-rc.d \
     && printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' > /etc/apt/apt.conf.d/80-retries \
+    && sed -i 's|http://deb.debian.org/debian|http://mirrors.aliyun.com/debian|g; s|http://deb.debian.org/debian-security|http://mirrors.aliyun.com/debian-security|g' /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
     systemd systemd-sysv dbus dbus-user-session \
@@ -72,17 +73,22 @@ CMD ["/lib/systemd/systemd"]
 
 FROM base AS build
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config \
+    && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config gnupg \
     && (apt-get purge -y needrestart || true) \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.2.0 \
+    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.0 \
     && pig sty init -f \
-    && pig repo add --remove \
-    && pig sty boot \
-    && pig sty conf -c rich \
-    && pig repo set --region=china \
+    && install -d /etc/apt/keyrings /usr/share/postgresql-common/pgdg \
+    && curl -fsSL https://repo.pigsty.cc/key | gpg --dearmor -o /etc/apt/keyrings/pigsty.gpg \
+    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+    && pig repo add -ru --region=china \
+    && pig sty boot -r china \
+    && pig sty conf -c rich -r china \
+    && pig repo add -ru --region=china \
     && pig build tool \
     && pig build spec \
-    && pig build rust \
-    && pig build pgrx \
+    && install -d /root/.cargo \
+    && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
+    && RUSTUP_DIST_SERVER="https://rsproxy.cn" RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup" pig build rust \
+    && pig build pgrx --pgrx 0.18.0 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

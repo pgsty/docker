@@ -1,3 +1,5 @@
+BUILD_ENVS = d12 d12a d13 d13a u22 u22a u24 u24a u26 u26a el8 el8a el9 el9a el10 el10a
+
 sync:
 	rsync -avz ./ ai:~/pgsty/docker/
 
@@ -15,6 +17,8 @@ dump:
 	docker save u22:full   | gzip -c - > img/u22.tgz
 	docker save u24a:full  | gzip -c - > img/u24a.tgz
 	docker save u24:full   | gzip -c - > img/u24.tgz
+	docker save u26a:full  | gzip -c - > img/u26a.tgz
+	docker save u26:full   | gzip -c - > img/u26.tgz
 
 du:
 	cd d12   && make meta
@@ -27,6 +31,8 @@ uu:
 	cd u22a  && make meta
 	cd u24   && make meta
 	cd u24a  && make meta
+	cd u26   && make meta
+	cd u26a  && make meta
 
 load:
 	cat img/d13a.tgz | gzip -d -c - | docker load
@@ -37,13 +43,15 @@ load:
 	cat img/u22.tgz  | gzip -d -c - | docker load
 	cat img/u24a.tgz | gzip -d -c - | docker load
 	cat img/u24.tgz  | gzip -d -c - | docker load
+	cat img/u26a.tgz | gzip -d -c - | docker load
+	cat img/u26.tgz  | gzip -d -c - | docker load
 
 sync-img:
 	rsync -avz ./img/ ai:~/pgsty/docker/img/
 sync-full:
 	rsync -avz ./ ai:~/pgsty/docker/
 
-build-x: build-d12 build-d13 build-u22 build-u24 build-el8 build-el9 build-el10
+build-x: build-d12 build-d13 build-u22 build-u24 build-u26 build-el8 build-el9 build-el10
 
 build-d12:
 	$(MAKE) -C d12 build
@@ -57,6 +65,9 @@ build-u22:
 build-u24:
 	$(MAKE) -C u24 build
 
+build-u26:
+	$(MAKE) -C u26 build
+
 build-el8:
 	$(MAKE) -C el8 build
 
@@ -66,7 +77,7 @@ build-el9:
 build-el10:
 	$(MAKE) -C el10 build
 
-build-a: build-d12a build-d13a build-u22a build-u24a build-el8a build-el9a build-el10a
+build-a: build-d12a build-d13a build-u22a build-u24a build-u26a build-el8a build-el9a build-el10a
 
 build-d12a:
 	$(MAKE) -C d12a build
@@ -88,3 +99,14 @@ build-el10a:
 
 build-u24a:
 	$(MAKE) -C u24a build
+
+build-u26a:
+	$(MAKE) -C u26a build
+
+refresh-all: $(addprefix refresh-,$(BUILD_ENVS))
+
+refresh-all-p4:
+	$(MAKE) -j4 refresh-all
+
+$(addprefix refresh-,$(BUILD_ENVS)):
+	$(MAKE) -C $(@:refresh-%=%) refresh-build

@@ -69,14 +69,15 @@ CMD ["/usr/sbin/init"]
 
 FROM base AS build
 RUN dnf install -y ca-certificates vim-minimal wget curl-minimal rsync unzip openssl-devel pkgconf-pkg-config \
-    && wget -qO /tmp/pig.rpm https://repo.pigsty.io/pkg/pig/v1.2.0/pig-1.2.0-1.aarch64.rpm \
+    && wget -qO /tmp/pig.rpm https://repo.pigsty.io/pkg/pig/v1.4.0/pig-1.4.0-1.aarch64.rpm \
     && rpm -Uvh /tmp/pig.rpm \
     && rm -f /tmp/pig.rpm \
     && pig sty init -f \
     && pig repo add --remove \
     && sed -ri 's#repo\.pigsty\.io#repo.pigsty.cc#g; s#https://nginx\.org#http://nginx.org#g; s#https://mirrors\.edge\.kernel\.org/fedora-epel#https://mirrors.aliyun.com/epel#g; s#https://dl\.rockylinux\.org/pub/rocky#https://mirrors.aliyun.com/rockylinux#g' /etc/yum.repos.d/*.repo \
     && /root/pigsty/bootstrap -r china -k \
-    && pig sty conf -c rich
+    && pig sty conf -c rich -r china \
+    && pig repo add -ru --region=china
 
 RUN pig build tool
 
@@ -90,7 +91,9 @@ RUN set -eux; \
     done; \
     test "$n" -lt 5
 
-RUN pig build rust \
-    && pig build pgrx \
+RUN install -d /root/.cargo \
+    && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
+    && RUSTUP_DIST_SERVER="https://rsproxy.cn" RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup" pig build rust \
+    && pig build pgrx --pgrx 0.18.0 \
     && dnf clean all \
     && rm -rf /var/cache/dnf /tmp/* /var/tmp/*

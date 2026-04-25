@@ -4,6 +4,9 @@ IMG=$(REPO)/$(NAME)
 ARCH=arm64
 CTN=$(NAME)
 CTN_BASE=$(NAME)-base
+CTN_UPDATE=$(NAME)-refresh
+PIG_VERSION?=1.4.0
+PGRX_VERSION?=0.18.0
 
 default: exec
 
@@ -15,6 +18,9 @@ run-base:
 	docker run --name=$(CTN_BASE) --platform=linux/$(ARCH) -d -it $(IMG) /bin/bash
 run-build:
 	docker run --name=$(CTN) --platform=linux/$(ARCH) -d -it $(IMG):build /bin/bash
+run-update:
+	-docker rm -f $(CTN_UPDATE)
+	docker run --name=$(CTN_UPDATE) --platform=linux/$(ARCH) -d -it $(IMG):build /bin/bash
 
 # Containers
 clean: stop rm stop-base rm-base
@@ -30,6 +36,17 @@ stop-base:
 	-docker stop $(CTN_BASE)
 rm-base:
 	-docker rm $(CTN_BASE)
+
+# Incremental update
+update-build:
+	docker exec $(CTN_UPDATE) bash -lc 'set -eux; pig update --region=china --version $(PIG_VERSION); pig build pgrx --pgrx $(PGRX_VERSION)'
+commit-build:
+	docker stop $(CTN_UPDATE)
+	docker commit $(CTN_UPDATE) $(IMG):build
+	docker tag $(IMG):build $(IMG):latest
+	docker tag $(IMG):build $(IMG)
+	docker rm $(CTN_UPDATE)
+refresh-build: run-update update-build commit-build
 
 # Specs
 meta:
