@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 AS base
+FROM ubuntu:noble-20260410 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -79,7 +79,7 @@ FROM base AS build
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config gnupg \
     && (apt-get purge -y needrestart || true) \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.0 \
+    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.1 \
     && pig sty init -f \
     && install -d /etc/apt/keyrings /usr/share/postgresql-common/pgdg \
     && curl -fsSL https://repo.pigsty.cc/key | gpg --dearmor -o /etc/apt/keyrings/pigsty.gpg \

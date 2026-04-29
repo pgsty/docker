@@ -1,4 +1,4 @@
-FROM rockylinux/rockylinux:9.7 AS base
+FROM rockylinux/rockylinux:9.7.20251123 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -64,7 +64,7 @@ CMD ["/usr/sbin/init"]
 
 FROM base AS build
 RUN dnf install -y ca-certificates vim-minimal wget curl-minimal rsync unzip openssl-devel pkgconf-pkg-config \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.0 \
+    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.1 \
     && pig sty init -f \
     && pig repo add -ru --region=china \
     && pig sty boot -r china \

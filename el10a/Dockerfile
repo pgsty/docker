@@ -1,4 +1,4 @@
-FROM rockylinux/rockylinux:10.1 AS base
+FROM rockylinux/rockylinux:10.1.20251126 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -69,7 +69,7 @@ CMD ["/usr/sbin/init"]
 
 FROM base AS build
 RUN dnf install -y ca-certificates vim-minimal wget curl-minimal rsync unzip openssl-devel pkgconf-pkg-config \
-    && wget -qO /tmp/pig.rpm https://repo.pigsty.io/pkg/pig/v1.4.0/pig-1.4.0-1.aarch64.rpm \
+    && wget -qO /tmp/pig.rpm https://repo.pigsty.io/pkg/pig/v1.4.1/pig-1.4.1-1.aarch64.rpm \
     && rpm -Uvh /tmp/pig.rpm \
     && rm -f /tmp/pig.rpm \
     && pig sty init -f \

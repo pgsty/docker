@@ -74,4 +74,4 @@ build-base:
 build-build:
 	docker build --platform=linux/$(ARCH) --target build -t $(IMG):build -f Dockerfile .
 pull:
-	docker pull --platform=linux/$(ARCH) debian:13.3
+	docker pull --platform=linux/$(ARCH) debian:trixie-20260421

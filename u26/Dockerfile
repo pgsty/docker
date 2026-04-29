@@ -1,4 +1,4 @@
-FROM ubuntu:26.04 AS base
+FROM ubuntu:resolute-20260413 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -114,7 +114,7 @@ RUN find /etc/apt -maxdepth 2 -type f \( -name 'sources.list' -o -name '*.list' 
         make cmake ninja-build pkg-config lld git lz4 unzip ncdu rsync vray jq debhelper devscripts fakeroot \
         libreadline-dev zlib1g-dev libxml2-dev libxslt1-dev liblz4-dev libzstd-dev libkrb5-dev \
         postgresql-all postgresql-server-dev-all \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.0 \
+    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.1 \
     && pig sty init -f \
     && pig sty boot -r china \
     && pig sty conf -c rich -r china \

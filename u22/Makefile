@@ -74,4 +74,4 @@ build-base:
 build-build:
 	docker build --platform=linux/$(ARCH) --target build -t $(IMG):build -f Dockerfile .
 pull:
-	docker pull --platform=linux/$(ARCH) ubuntu:22.04
+	docker pull --platform=linux/$(ARCH) ubuntu:jammy-20260410

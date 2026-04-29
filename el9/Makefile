@@ -73,4 +73,4 @@ build-base:
 build-build:
 	docker build --platform=linux/$(ARCH) --target build -t $(IMG):build -f Dockerfile .
 pull:
-	docker pull --platform=linux/$(ARCH) rockylinux/rockylinux:9.7
+	docker pull --platform=linux/$(ARCH) rockylinux/rockylinux:9.7.20251123
