@@ -5,8 +5,8 @@ ARCH=arm64
 CTN=$(NAME)
 CTN_BASE=$(NAME)-base
 CTN_UPDATE=$(NAME)-refresh
-PIG_VERSION?=1.4.0
-PGRX_VERSION?=0.18.0
+PIG_VERSION?=1.4.2
+PGRX_VERSION?=0.18.1
 
 default: exec
 

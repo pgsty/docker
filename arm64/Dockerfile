@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssh-server 
     && echo '%sudo ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/nopasswd \
     && echo 'root:root' | chpasswd \
     && systemctl mask user@.service \
-    && curl https://repo.pigsty.cc/pig | bash \
+    && curl https://repo.pigsty.cc/pig | bash -s v1.4.2 \
     && pig repo set --region=china \
     && pig sty init \
     && pig sty boot \

@@ -1,4 +1,4 @@
-FROM ubuntu:noble-20260410 AS base
+FROM ubuntu:noble-20260509.1 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -79,7 +79,7 @@ FROM base AS build
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config gnupg \
     && (apt-get purge -y needrestart || true) \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.1 \
+    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.2 \
     && pig sty init -f \
     && install -d /etc/apt/keyrings /usr/share/postgresql-common/pgdg \
     && curl -fsSL https://repo.pigsty.cc/key | gpg --dearmor -o /etc/apt/keyrings/pigsty.gpg \
@@ -93,6 +93,6 @@ RUN apt-get update \
     && install -d /root/.cargo \
     && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
     && RUSTUP_DIST_SERVER="https://rsproxy.cn" RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup" pig build rust \
-    && pig build pgrx --pgrx 0.18.0 \
+    && pig build pgrx --pgrx 0.18.1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

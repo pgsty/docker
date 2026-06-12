@@ -1,10 +1,10 @@
-FROM rockylinux/rockylinux:10.1.20251126 AS base
+FROM rockylinux/rockylinux:10.2.20260525.0 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
     TZ=Asia/Shanghai
 
-# Rocky Linux 10.1 (Red Quartz)
+# Rocky Linux 10.2 (Red Quartz)
 RUN groupadd -g 26 postgres && useradd -u 26 -g 26 -m -s /bin/bash postgres
 
 RUN sed -ri \
@@ -69,7 +69,7 @@ CMD ["/usr/sbin/init"]
 
 FROM base AS build
 RUN dnf install -y ca-certificates vim-minimal wget curl-minimal rsync unzip openssl-devel pkgconf-pkg-config \
-    && wget -qO /tmp/pig.rpm https://repo.pigsty.io/pkg/pig/v1.4.1/pig-1.4.1-1.aarch64.rpm \
+    && wget -qO /tmp/pig.rpm https://repo.pigsty.io/pkg/pig/v1.4.2/pig-1.4.2-1.aarch64.rpm \
     && rpm -Uvh /tmp/pig.rpm \
     && rm -f /tmp/pig.rpm \
     && pig sty init -f \
@@ -94,6 +94,6 @@ RUN set -eux; \
 RUN install -d /root/.cargo \
     && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
     && RUSTUP_DIST_SERVER="https://rsproxy.cn" RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup" pig build rust \
-    && pig build pgrx --pgrx 0.18.0 \
+    && pig build pgrx --pgrx 0.18.1 \
     && dnf clean all \
     && rm -rf /var/cache/dnf /tmp/* /var/tmp/*

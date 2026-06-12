@@ -1,4 +1,4 @@
-FROM ubuntu:resolute-20260413 AS base
+FROM ubuntu:resolute-20260421 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -91,7 +91,7 @@ RUN find /etc/apt -maxdepth 2 -type f \( -name 'sources.list' -o -name '*.list' 
         make cmake ninja-build pkg-config lld git lz4 unzip ncdu rsync vray jq debhelper devscripts fakeroot \
         libreadline-dev zlib1g-dev libxml2-dev libxslt1-dev liblz4-dev libzstd-dev libkrb5-dev \
         postgresql-all postgresql-server-dev-all \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.1 \
+    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.2 \
     && pig sty init -f \
     && pig sty boot -r china \
     && pig sty conf -c rich -r china \
@@ -99,6 +99,6 @@ RUN find /etc/apt -maxdepth 2 -type f \( -name 'sources.list' -o -name '*.list' 
     && install -d /root/.cargo \
     && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
     && RUSTUP_DIST_SERVER="https://rsproxy.cn" RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup" pig build rust \
-    && pig build pgrx --pgrx 0.18.0 \
+    && pig build pgrx --pgrx 0.18.1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

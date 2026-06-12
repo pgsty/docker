@@ -5,8 +5,8 @@ ARCH=amd64
 CTN=$(NAME)
 CTN_BASE=$(NAME)-base
 CTN_UPDATE=$(NAME)-refresh
-PIG_VERSION?=1.4.0
-PGRX_VERSION?=0.18.0
+PIG_VERSION?=1.4.2
+PGRX_VERSION?=0.18.1
 
 default: exec
 
@@ -73,4 +73,4 @@ build-base:
 build-build:
 	docker build --platform=linux/$(ARCH) --target build -t $(IMG):build -f Dockerfile .
 pull:
-	docker pull --platform=linux/$(ARCH) rockylinux/rockylinux:9.7.20251123
+	docker pull --platform=linux/$(ARCH) rockylinux/rockylinux:9.8.20260525.0
