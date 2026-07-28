@@ -64,8 +64,8 @@ CMD ["/usr/sbin/init"]
 
 FROM base AS build
 RUN dnf install -y ca-certificates vim-minimal wget curl-minimal rsync unzip openssl-devel pkgconf-pkg-config \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.2 \
-    && pig sty init -f \
+    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.6.0 \
+    && pig sty init -v 4.5.0 -f \
     && pig repo add -ru --region=china \
     && pig sty boot -r china \
     && pig sty conf -c rich -r china \

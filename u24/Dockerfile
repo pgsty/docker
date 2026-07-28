@@ -102,8 +102,8 @@ FROM base AS build
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config gnupg \
     && (apt-get purge -y needrestart || true) \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.2 \
-    && pig sty init -f \
+    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.6.0 \
+    && pig sty init -v 4.5.0 -f \
     && install -d /etc/apt/keyrings /usr/share/postgresql-common/pgdg \
     && curl -fsSL https://repo.pigsty.cc/key | gpg --dearmor -o /etc/apt/keyrings/pigsty.gpg \
     && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \

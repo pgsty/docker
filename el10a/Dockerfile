@@ -69,10 +69,10 @@ CMD ["/usr/sbin/init"]
 
 FROM base AS build
 RUN dnf install -y ca-certificates vim-minimal wget curl-minimal rsync unzip openssl-devel pkgconf-pkg-config \
-    && wget -qO /tmp/pig.rpm https://repo.pigsty.io/pkg/pig/v1.4.2/pig-1.4.2-1.aarch64.rpm \
+    && wget -qO /tmp/pig.rpm https://repo.pigsty.io/pkg/pig/v1.6.0/pig-1.6.0-1.aarch64.rpm \
     && rpm -Uvh /tmp/pig.rpm \
     && rm -f /tmp/pig.rpm \
-    && pig sty init -f \
+    && pig sty init -v 4.5.0 -f \
     && pig repo add --remove \
     && sed -ri 's#repo\.pigsty\.io#repo.pigsty.cc#g; s#https://nginx\.org#http://nginx.org#g; s#https://mirrors\.edge\.kernel\.org/fedora-epel#https://mirrors.aliyun.com/epel#g; s#https://dl\.rockylinux\.org/pub/rocky#https://mirrors.aliyun.com/rockylinux#g' /etc/yum.repos.d/*.repo \
     && /root/pigsty/bootstrap -r china -k \

@@ -114,8 +114,8 @@ RUN find /etc/apt -maxdepth 2 -type f \( -name 'sources.list' -o -name '*.list' 
         make cmake ninja-build pkg-config lld git lz4 unzip ncdu rsync vray jq debhelper devscripts fakeroot \
         libreadline-dev zlib1g-dev libxml2-dev libxslt1-dev liblz4-dev libzstd-dev libkrb5-dev \
         postgresql-all postgresql-server-dev-all \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.4.2 \
-    && pig sty init -f \
+    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.6.0 \
+    && pig sty init -v 4.5.0 -f \
     && pig sty boot -r china \
     && pig sty conf -c rich -r china \
     && pig build spec \
