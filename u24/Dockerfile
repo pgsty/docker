@@ -1,4 +1,4 @@
-FROM ubuntu:noble-20260509.1 AS base
+FROM ubuntu:noble-20260810 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -46,7 +46,6 @@ RUN cd /lib/systemd/system/sysinit.target.wants/ \
 RUN ln -sf /dev/null /etc/systemd/system/dev-hugepages.mount \
     && ln -sf /dev/null /etc/systemd/system/sys-fs-fuse-connections.mount \
     && ln -sf /dev/null /etc/systemd/system/systemd-update-utmp.service \
-    && ln -sf /dev/null /etc/systemd/system/systemd-tmpfiles-setup.service \
     && ln -sf /dev/null /etc/systemd/system/console-getty.service \
     && mkdir -p /etc/ssh/sshd_config.d \
     && printf 'PermitRootLogin yes\nPasswordAuthentication yes\n' > /etc/ssh/sshd_config.d/99-pigsty.conf
@@ -60,9 +59,7 @@ RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
 RUN mkdir -p /run/sshd /root/.ssh \
     && chmod 700 /root/.ssh \
     && ssh-keygen -A \
-    && rm -f /etc/systemd/system/multi-user.target.wants/ssh.service \
-    && rm -f /etc/systemd/system/ssh.service.requires/ssh.socket \
-    && rm -f /etc/systemd/system/sockets.target.wants/ssh.socket
+    && ln -sf /lib/systemd/system/ssh.service /etc/systemd/system/multi-user.target.wants/ssh.service
 
 RUN ssh-keygen -t rsa -b 2048 -N '' -f /root/.ssh/id_rsa \
     && cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys \
@@ -73,49 +70,22 @@ RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/nopasswd \
     && chmod 440 /etc/sudoers.d/nopasswd \
     && echo 'root:pigsty' | chpasswd
 
-RUN cat > /usr/local/bin/pigsty-entrypoint.sh <<'EOF'
-#!/bin/bash
-set -euo pipefail
-
-# systemd startup may wipe /run, keep sshd privilege-separation dir present.
-(
-  while true; do
-    mkdir -p /run/sshd
-    chmod 0755 /run/sshd
-    sleep 1
-  done
-) &
-
-/usr/sbin/sshd
-
-exec /lib/systemd/systemd
-EOF
-
-RUN chmod +x /usr/local/bin/pigsty-entrypoint.sh
-
 RUN mkdir -p /data
 VOLUME ["/data"]
 STOPSIGNAL SIGRTMIN+3
-CMD ["/usr/local/bin/pigsty-entrypoint.sh"]
+CMD ["/lib/systemd/systemd"]
 
 FROM base AS build
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config gnupg \
+    && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config \
     && (apt-get purge -y needrestart || true) \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.6.0 \
+    && curl -fsSL https://repo.pigsty.cc/pig | bash -s v1.8.0 \
     && pig sty init -v 4.5.0 -f \
-    && install -d /etc/apt/keyrings /usr/share/postgresql-common/pgdg \
-    && curl -fsSL https://repo.pigsty.cc/key | gpg --dearmor -o /etc/apt/keyrings/pigsty.gpg \
-    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
-    && pig repo add -ru --region=china \
-    && pig sty boot -r china \
-    && pig sty conf -c rich -r china \
-    && pig repo add -ru --region=china \
-    && pig build tool \
-    && pig build spec \
-    && install -d /root/.cargo \
-    && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
-    && RUSTUP_DIST_SERVER="https://rsproxy.cn" RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup" pig build rust \
-    && pig build pgrx --pgrx 0.18.1 \
+    && pig repo add   --mirror --remove \
+    && pig sty  boot  --mirror \
+    && pig sty  conf  --mirror -c rich \
+    && pig repo  set  --mirror && pig build tool \
+    && pig build spec --mirror \
+    && pig build rust --mirror && pig build pgrx \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
