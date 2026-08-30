@@ -64,15 +64,15 @@ CMD ["/usr/sbin/init"]
 
 FROM base AS build
 RUN dnf install -y ca-certificates vim-minimal wget curl-minimal rsync unzip openssl-devel pkgconf-pkg-config \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.6.0 \
+    && curl -fsSL https://repo.pigsty.cc/pig | bash -s v1.8.0 \
     && pig sty init -v 4.5.0 -f \
-    && pig repo add -ru --region=china \
-    && pig sty boot -r china \
-    && pig sty conf -c rich -r china \
-    && pig repo add -ru --region=china \
+    && pig repo add --mirror --remove \
+    && pig sty boot --mirror \
+    && pig sty conf --mirror -c rich \
+    && pig repo set --mirror \
     && pig build tool \
-    && pig build spec \
-    && install -d /root/.cargo \
-    && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
-    && RUSTUP_DIST_SERVER="https://rsproxy.cn" RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup" pig build rust \
-    && pig build pgrx --pgrx 0.18.1
+    && pig build spec --mirror \
+    && pig build rust --mirror \
+    && pig build pgrx \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf /tmp/* /var/tmp/*
