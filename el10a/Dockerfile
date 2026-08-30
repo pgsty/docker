@@ -7,10 +7,7 @@ ENV container=docker \
 # Rocky Linux 10.2 (Red Quartz)
 RUN groupadd -g 26 postgres && useradd -u 26 -g 26 -m -s /bin/bash postgres
 
-RUN sed -ri \
-    -e 's!^mirrorlist=!#mirrorlist=!g' \
-    -e 's!^#baseurl=http://dl.rockylinux.org/\$contentdir/!baseurl=https://mirrors.aliyun.com/rockylinux/!g' \
-    /etc/yum.repos.d/rocky*.repo
+RUN sed -ri -e 's!^mirrorlist=!#mirrorlist=!g' -e 's!^#baseurl=http://dl.rockylinux.org/\$contentdir/!baseurl=https://mirrors.aliyun.com/rockylinux/!g' /etc/yum.repos.d/rocky*.repo
 
 RUN dnf install -y \
     systemd openssh-server openssh-clients sudo passwd \
@@ -69,31 +66,15 @@ CMD ["/usr/sbin/init"]
 
 FROM base AS build
 RUN dnf install -y ca-certificates vim-minimal wget curl-minimal rsync unzip openssl-devel pkgconf-pkg-config \
-    && wget -qO /tmp/pig.rpm https://repo.pigsty.io/pkg/pig/v1.6.0/pig-1.6.0-1.aarch64.rpm \
-    && rpm -Uvh /tmp/pig.rpm \
-    && rm -f /tmp/pig.rpm \
+    && curl -fsSL https://repo.pigsty.cc/pig | bash -s v1.8.0 \
     && pig sty init -v 4.5.0 -f \
-    && pig repo add --remove \
-    && sed -ri 's#repo\.pigsty\.io#repo.pigsty.cc#g; s#https://nginx\.org#http://nginx.org#g; s#https://mirrors\.edge\.kernel\.org/fedora-epel#https://mirrors.aliyun.com/epel#g; s#https://dl\.rockylinux\.org/pub/rocky#https://mirrors.aliyun.com/rockylinux#g' /etc/yum.repos.d/*.repo \
-    && /root/pigsty/bootstrap -r china -k \
-    && pig sty conf -c rich -r china \
-    && pig repo add -ru --region=china
-
-RUN pig build tool
-
-RUN set -eux; \
-    n=0; \
-    until [ "$n" -ge 5 ]; do \
-        pig build spec -f -m && break; \
-        n=$((n + 1)); \
-        echo "pig build spec retry: $n"; \
-        sleep 3; \
-    done; \
-    test "$n" -lt 5
-
-RUN install -d /root/.cargo \
-    && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
-    && RUSTUP_DIST_SERVER="https://rsproxy.cn" RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup" pig build rust \
-    && pig build pgrx --pgrx 0.18.1 \
+    && pig repo add --mirror --remove \
+    && pig sty boot --mirror \
+    && pig sty conf --mirror -c rich \
+    && pig repo set --mirror \
+    && pig build tool \
+    && pig build spec --mirror \
+    && pig build rust --mirror \
+    && pig build pgrx \
     && dnf clean all \
     && rm -rf /var/cache/dnf /tmp/* /var/tmp/*

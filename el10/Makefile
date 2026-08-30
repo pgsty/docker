@@ -5,8 +5,8 @@ ARCH=amd64
 CTN=$(NAME)
 CTN_BASE=$(NAME)-base
 CTN_UPDATE=$(NAME)-refresh
-PIG_VERSION?=1.4.2
-PGRX_VERSION?=0.18.1
+PIG_VERSION?=1.8.0
+PGRX_VERSION?=0.19.1
 
 default: exec
 
