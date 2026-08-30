@@ -2,7 +2,7 @@
 all:
 
   vars:
-    version: v3.7.0                   # pigsty version string
+    version: v4.5.0                   # pigsty version string
     admin_ip: 127.0.0.1               # admin node ip address
     region: china                     # upstream mirror region: default|china|europe
 
