@@ -1,4 +1,4 @@
-FROM ubuntu:jammy-20260509 AS base
+FROM ubuntu:jammy-20260810 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -77,22 +77,15 @@ CMD ["/lib/systemd/systemd"]
 
 FROM base AS build
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config gnupg \
+    && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config \
     && (apt-get purge -y needrestart || true) \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.6.0 \
+    && curl -fsSL https://repo.pigsty.cc/pig | bash -s v1.8.0 \
     && pig sty init -v 4.5.0 -f \
-    && install -d /etc/apt/keyrings /usr/share/postgresql-common/pgdg \
-    && curl -fsSL https://repo.pigsty.cc/key | gpg --dearmor -o /etc/apt/keyrings/pigsty.gpg \
-    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
-    && pig repo add -ru --region=china \
-    && pig sty boot -r china \
-    && pig sty conf -c rich -r china \
-    && pig repo add -ru --region=china \
-    && pig build tool \
-    && pig build spec \
-    && install -d /root/.cargo \
-    && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
-    && RUSTUP_DIST_SERVER="https://rsproxy.cn" RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup" pig build rust \
-    && pig build pgrx --pgrx 0.18.1 \
+    && pig repo add   --mirror --remove \
+    && pig sty  boot  --mirror \
+    && pig sty  conf  --mirror -c rich \
+    && pig repo  set  --mirror && pig build tool \
+    && pig build spec --mirror \
+    && pig build rust --mirror && pig build pgrx \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
