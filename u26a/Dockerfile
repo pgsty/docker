@@ -1,4 +1,4 @@
-FROM ubuntu:resolute-20260421 AS base
+FROM ubuntu:resolute-20260811.1 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -76,29 +76,16 @@ STOPSIGNAL SIGRTMIN+3
 CMD ["/lib/systemd/systemd"]
 
 FROM base AS build
-RUN find /etc/apt -maxdepth 2 -type f \( -name 'sources.list' -o -name '*.list' -o -name '*.sources' \) \
-        -exec sed -ri 's|https?://mirrors.aliyun.com/ubuntu-ports/?|https://mirrors.ustc.edu.cn/ubuntu-ports/|g' {} + \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config gnupg \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config \
     && (apt-get purge -y needrestart || true) \
-    && install -d /etc/apt/keyrings /usr/share/postgresql-common/pgdg \
-    && curl -fsSL https://repo.pigsty.cc/key | gpg --dearmor -o /etc/apt/keyrings/pigsty.gpg \
-    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
-    && printf 'deb [signed-by=/etc/apt/keyrings/pigsty.gpg] https://repo.pigsty.cc/apt/infra/ generic main\n' > /etc/apt/sources.list.d/infra.list \
-    && printf 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://mirrors.aliyun.com/postgresql/repos/apt/ resolute-pgdg main\n' > /etc/apt/sources.list.d/pgsql.list \
-    && apt-get update \
-    && apt-get install -y \
-        make cmake ninja-build pkg-config lld git lz4 unzip ncdu rsync vray jq debhelper devscripts fakeroot \
-        libreadline-dev zlib1g-dev libxml2-dev libxslt1-dev liblz4-dev libzstd-dev libkrb5-dev \
-        postgresql-all postgresql-server-dev-all \
-    && curl -fsSL https://repo.pigsty.io/pig | bash -s v1.6.0 \
+    && curl -fsSL https://repo.pigsty.cc/pig | bash -s v1.8.0 \
     && pig sty init -v 4.5.0 -f \
-    && pig sty boot -r china \
-    && pig sty conf -c rich -r china \
-    && pig build spec \
-    && install -d /root/.cargo \
-    && printf '[source.crates-io]\nreplace-with = "rsproxy"\n\n[source.rsproxy]\nregistry = "sparse+https://rsproxy.cn/index/"\n\n[net]\ngit-fetch-with-cli = true\n' > /root/.cargo/config.toml \
-    && RUSTUP_DIST_SERVER="https://rsproxy.cn" RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup" pig build rust \
-    && pig build pgrx --pgrx 0.18.1 \
+    && pig repo add   --mirror --remove \
+    && pig sty  boot  --mirror \
+    && pig sty  conf  --mirror -c rich \
+    && pig repo  set  --mirror && pig build tool \
+    && pig build spec --mirror \
+    && pig build rust --mirror && pig build pgrx \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
