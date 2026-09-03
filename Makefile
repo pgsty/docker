@@ -1,4 +1,4 @@
-BUILD_ENVS = d11 d11a d12 d12a d13 d13a u20 u20a u22 u22a u24 u24a u26 u26a el7 el8 el8a el9 el9a el93 el93a el10 el10a el100 el100a
+BUILD_ENVS = d12 d12a d13 d13a u22 u22a u24 u24a u26 u26a el8 el8a el9 el9a el10 el10a
 
 sync:
 	rsync -avz ./ ai:~/pgsty/docker/
@@ -55,7 +55,7 @@ sync-img:
 sync-full:
 	rsync -avz ./ ai:~/pgsty/docker/
 
-build-x: build-d11 build-d12 build-d13 build-u20 build-u22 build-u24 build-u26 build-el7 build-el8 build-el9 build-el93 build-el10 build-el100
+build-x: build-d12 build-d13 build-u22 build-u24 build-u26 build-el8 build-el9 build-el10
 
 build-d11:
 	$(MAKE) -C d11 build
@@ -96,7 +96,7 @@ build-el10:
 build-el100:
 	$(MAKE) -C el100 build
 
-build-a: build-d11a build-d12a build-d13a build-u20a build-u22a build-u24a build-u26a build-el8a build-el9a build-el93a build-el10a build-el100a
+build-a: build-d12a build-d13a build-u22a build-u24a build-u26a build-el8a build-el9a build-el10a
 
 build-d11a:
 	$(MAKE) -C d11a build

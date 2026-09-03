@@ -7,6 +7,8 @@ ENV container=docker \
 # Rocky Linux 10.2 (Red Quartz)
 RUN groupadd -g 26 postgres && useradd -u 26 -g 26 -m -s /bin/bash postgres
 
+RUN printf '\nminrate=1\ntimeout=300\nretries=10\n' >> /etc/dnf/dnf.conf
+
 RUN sed -ri -e 's!^mirrorlist=!#mirrorlist=!g' -e 's!^#baseurl=http://dl.rockylinux.org/\$contentdir/!baseurl=https://mirrors.aliyun.com/rockylinux/!g' /etc/yum.repos.d/rocky*.repo
 
 RUN dnf install -y \
@@ -65,16 +67,14 @@ STOPSIGNAL SIGRTMIN+3
 CMD ["/usr/sbin/init"]
 
 FROM base AS build
-RUN dnf install -y ca-certificates vim-minimal wget curl-minimal rsync unzip openssl-devel pkgconf-pkg-config \
-    && curl -fsSL https://repo.pigsty.cc/pig | bash -s v1.8.0 \
-    && pig sty init -v 4.5.0 -f \
+RUN dnf install -y gcc gcc-c++ ca-certificates vim-minimal wget curl-minimal rsync unzip openssl-devel pkgconf-pkg-config \
+    && (for attempt in 1 2 3 4 5; do curl -fsSL https://repo.pigsty.cc/pig -o /tmp/pig-installer && break; [ "$attempt" -eq 5 ] && exit 1; echo "retrying pig installer ($attempt/5)" >&2; sleep 3; done) \
+    && bash /tmp/pig-installer v1.8.1 && rm -f /tmp/pig-installer \
     && pig repo add --mirror --remove \
-    && pig sty boot --mirror \
-    && pig sty conf --mirror -c rich \
     && pig repo set --mirror \
     && pig build tool \
     && pig build spec --mirror \
-    && pig build rust --mirror \
+    && (for attempt in 1 2 3; do pig build rust --mirror && break; [ "$attempt" -eq 3 ] && exit 1; echo "retrying rust setup ($attempt/3)" >&2; sleep 3; done) \
     && pig build pgrx \
     && dnf clean all \
     && rm -rf /var/cache/dnf /tmp/* /var/tmp/*

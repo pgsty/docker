@@ -79,11 +79,8 @@ FROM base AS build
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config \
     && (apt-get purge -y needrestart || true) \
-    && curl -fsSL https://repo.pigsty.cc/pig | bash -s v1.8.0 \
-    && pig sty init -v 4.5.0 -f \
+    && curl -fsSL https://repo.pigsty.cc/pig | bash -s v1.8.1 \
     && pig repo add   --mirror --remove \
-    && pig sty  boot  --mirror \
-    && pig sty  conf  --mirror -c rich \
     && pig repo  set  --mirror && pig build tool \
     && pig build spec --mirror \
     && pig build rust --mirror && pig build pgrx \
