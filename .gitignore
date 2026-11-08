@@ -8,3 +8,6 @@ pkg/
 test/
 *.tgz
 CLAUDE.md
+
+# Locally compiled PGEXT build-context binaries.
+/.pgext/
