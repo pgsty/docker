@@ -8,6 +8,12 @@ pkg/
 test/
 *.tgz
 CLAUDE.md
+AGENTS.md
+
+# Container image archives and build exports are local artifacts.
+/image-archives/
+/build-logs/
+/logs/
 
 # Locally compiled PGEXT build-context binaries.
 /.pgext/
