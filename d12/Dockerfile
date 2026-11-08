@@ -72,13 +72,14 @@ STOPSIGNAL SIGRTMIN+3
 CMD ["/lib/systemd/systemd"]
 
 FROM base AS build
+COPY --from=pgext /pgext /usr/local/bin/pgext
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config \
     && (apt-get purge -y needrestart || true) \
-    && curl -fsSL https://repo.pigsty.cc/pig | bash -s v1.8.1 \
-    && pig repo add   --mirror --remove \
-    && pig repo  set  --mirror && pig build tool \
-    && pig build spec --mirror \
-    && pig build rust --mirror && pig build pgrx \
+    && pgext env repo --mirror \
+    && pgext env tool \
+    && pgext env spec --mirror \
+    && pgext env rust --mirror \
+    && pgext env pgrx --pgrx 0.19.3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

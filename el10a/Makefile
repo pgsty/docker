@@ -5,8 +5,7 @@ ARCH=arm64
 CTN=$(NAME)
 CTN_BASE=$(NAME)-base
 CTN_UPDATE=$(NAME)-refresh
-PIG_VERSION?=1.8.1
-PGRX_VERSION?=0.19.1
+PGRX_VERSION?=0.19.3
 
 default: exec
 
@@ -38,8 +37,6 @@ rm-base:
 	-docker rm $(CTN_BASE)
 
 # Incremental update
-update-build:
-	docker exec $(CTN_UPDATE) bash -lc 'set -eux; pig update --region=china --version $(PIG_VERSION); pig build pgrx --pgrx $(PGRX_VERSION)'
 commit-build:
 	docker stop $(CTN_UPDATE)
 	docker commit $(CTN_UPDATE) $(IMG):build
@@ -49,12 +46,7 @@ commit-build:
 refresh-build: run-update update-build commit-build
 
 # Specs
-meta:
-	docker cp ~/pgsty/pgext/db/extension.csv $(CTN):/root/.pig/extension.csv
-spec:
-	docker exec -it $(CTN) rm -rf /root/ext/rpmbuild
-	docker cp -a ~/pgsty/rpm/rpmbuild $(CTN):/root/ext/rpmbuild
-	docker exec -it $(CTN) rsync -avz /root/ext/rpmbuild/ /root/rpmbuild/
+meta: exts spec
 
 # Images
 save:
@@ -70,7 +62,9 @@ rmi:
 build: build-base build-build
 build-base:
 	docker build --platform=linux/$(ARCH) --target base -t $(IMG):latest -t $(IMG) -f Dockerfile .
-build-build:
-	docker build --platform=linux/$(ARCH) --target build -t $(IMG):build -f Dockerfile .
+build-build: pgext-bin
+	docker build --build-context pgext=$(PGEXT_DIR) --platform=linux/$(ARCH) --target build -t $(IMG):build -f Dockerfile .
 pull:
 	docker pull --platform=linux/$(ARCH) rockylinux/rockylinux:10.2.20260525.0
+
+include ../pgext.mk

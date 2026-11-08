@@ -65,14 +65,12 @@ STOPSIGNAL SIGRTMIN+3
 CMD ["/usr/sbin/init"]
 
 FROM base AS build
+COPY --from=pgext /pgext /usr/local/bin/pgext
 RUN dnf install -y gcc gcc-c++ ca-certificates vim-minimal wget curl rsync unzip openssl-devel pkgconf-pkg-config \
-    && (for attempt in 1 2 3 4 5; do curl -fsSL https://repo.pigsty.cc/pig -o /tmp/pig-installer && break; [ "$attempt" -eq 5 ] && exit 1; echo "retrying pig installer ($attempt/5)" >&2; sleep 3; done) \
-    && bash /tmp/pig-installer v1.8.1 && rm -f /tmp/pig-installer \
-    && pig repo add --mirror --remove \
-    && pig repo set --mirror \
-    && pig build tool \
-    && pig build spec --mirror \
-    && (for attempt in 1 2 3; do pig build rust --mirror && break; [ "$attempt" -eq 3 ] && exit 1; echo "retrying rust setup ($attempt/3)" >&2; sleep 3; done) \
-    && pig build pgrx \
+    && pgext env repo --mirror \
+    && pgext env tool \
+    && pgext env spec --mirror \
+    && (for attempt in 1 2 3; do pgext env rust --mirror && break; [ "$attempt" -eq 3 ] && exit 1; echo "retrying rust setup ($attempt/3)" >&2; sleep 3; done) \
+    && pgext env pgrx --pgrx 0.19.3 \
     && dnf clean all \
     && rm -rf /var/cache/dnf /tmp/* /var/tmp/*
