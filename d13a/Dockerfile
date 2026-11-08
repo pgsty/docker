@@ -1,4 +1,4 @@
-FROM debian:trixie-20260824 AS base
+FROM debian:trixie-20261027 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -7,7 +7,7 @@ ENV container=docker \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
-# Debian 13.6 (Trixie)
+# Debian 13.7 (Trixie)
 RUN groupadd -g 543 postgres && useradd -u 543 -g 543 -m -s /bin/bash postgres
 
 RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d \
@@ -77,9 +77,12 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config \
     && (apt-get purge -y needrestart || true) \
     && pgext env repo --mirror \
+    && find /etc/apt/sources.list.d -maxdepth 1 -type f \( -name '*.list' -o -name '*.sources' \) \
+        -exec sed -i 's|http://deb.debian.org/debian|http://mirrors.aliyun.com/debian|g; s|https://mirrors.cloud.tencent.com/debian|http://mirrors.aliyun.com/debian|g; s|https://mirrors.cloud.tencent.com/postgresql/repos/apt/|https://apt.postgresql.org/pub/repos/apt/|g' {} + \
+    && apt-get update \
     && pgext env tool \
     && pgext env spec --mirror \
-    && pgext env rust --mirror \
+    && (for attempt in 1 2 3; do pgext env rust --mirror && break; [ "$attempt" -eq 3 ] && exit 1; echo "retrying rust setup ($attempt/3)" >&2; sleep 3; done) \
     && pgext env pgrx --pgrx 0.19.3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

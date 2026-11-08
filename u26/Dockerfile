@@ -1,4 +1,4 @@
-FROM ubuntu:resolute-20260811.1 AS base
+FROM ubuntu:resolute-20261024.1 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -83,7 +83,6 @@ RUN apt-get update \
     && pgext env repo --mirror \
     && pgext env tool \
     && pgext env spec --mirror \
-    && pgext env rust --mirror \
-    && pgext env pgrx --pgrx 0.19.3 \
+    && pgext env rust --mirror && pgext env pgrx --pgrx 0.19.3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

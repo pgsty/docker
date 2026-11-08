@@ -1,4 +1,4 @@
-FROM debian:trixie-20260824 AS base
+FROM debian:trixie-20261027 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -7,7 +7,7 @@ ENV container=docker \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
-# Debian 13.6 (Trixie)
+# Debian 13.7 (Trixie)
 RUN groupadd -g 543 postgres && useradd -u 543 -g 543 -m -s /bin/bash postgres
 
 RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d \
@@ -79,7 +79,6 @@ RUN apt-get update \
     && pgext env repo --mirror \
     && pgext env tool \
     && pgext env spec --mirror \
-    && pgext env rust --mirror \
-    && pgext env pgrx --pgrx 0.19.3 \
+    && pgext env rust --mirror && pgext env pgrx --pgrx 0.19.3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

@@ -40,10 +40,11 @@ rm-base:
 commit-build:
 	docker stop $(CTN_UPDATE)
 	docker commit $(CTN_UPDATE) $(IMG):build
-	docker tag $(IMG):build $(IMG):latest
-	docker tag $(IMG):build $(IMG)
 	docker rm $(CTN_UPDATE)
-refresh-build: run-update update-build commit-build
+refresh-build:
+	$(MAKE) run-update
+	$(MAKE) update-build
+	$(MAKE) commit-build
 
 # Specs
 meta: exts spec
@@ -65,6 +66,6 @@ build-base:
 build-build: pgext-bin
 	docker build --build-context pgext=$(PGEXT_DIR) --platform=linux/$(ARCH) --target build -t $(IMG):build -f Dockerfile .
 pull:
-	docker pull --platform=linux/$(ARCH) ubuntu:noble-20260810
+	docker pull --platform=linux/$(ARCH) ubuntu:noble-20261024.1
 
 include ../pgext.mk

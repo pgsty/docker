@@ -1,4 +1,4 @@
-FROM debian:bookworm-20260824 AS base
+FROM debian:bookworm-20261027 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -77,9 +77,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config \
     && (apt-get purge -y needrestart || true) \
     && pgext env repo --mirror \
+    && apt-get update \
     && pgext env tool \
     && pgext env spec --mirror \
-    && pgext env rust --mirror \
+    && (for attempt in 1 2 3; do pgext env rust --mirror && break; [ "$attempt" -eq 3 ] && exit 1; echo "retrying rust setup ($attempt/3)" >&2; sleep 3; done) \
     && pgext env pgrx --pgrx 0.19.3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

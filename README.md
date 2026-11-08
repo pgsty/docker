@@ -33,10 +33,12 @@ Fetch sources inside the builder with `pgext get`; copy only a specific missing
 archive as a fallback. New builds put artifacts in isolated directories under
 `~/ext/pkg/` and record exact paths and checksums in `~/ext/log/run-*/result.json`.
 
-`refresh-build` updates the PGEXT binary and cargo-pgrx before committing the refreshed
-builder image. A fresh `build-build` applies the complete new environment setup;
-an incremental refresh reuses installed tools and existing repositories. For legacy
-PIG repository files, explicitly run
+`refresh-build` updates the PGEXT binary and cargo-pgrx in a temporary container,
+then commits only the `:build` image. It does not replace `:latest` with a build
+image. Before a production refresh, retain the previous build image under an
+explicit rollback tag or archive. A fresh `build-build` applies the complete
+new environment setup; an incremental refresh reuses installed tools and
+existing repositories. For legacy PIG repository files, explicitly run
 `pgext env repo add pgdg pigsty --replace --mirror` to back them up and migrate
 them to signed PGEXT definitions.
 

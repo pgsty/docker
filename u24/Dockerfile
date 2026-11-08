@@ -1,4 +1,4 @@
-FROM ubuntu:noble-20260810 AS base
+FROM ubuntu:noble-20261024.1 AS base
 USER root
 WORKDIR /root/
 ENV container=docker \
@@ -81,9 +81,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates vim ncdu wget curl rsync unzip libssl-dev pkg-config \
     && (apt-get purge -y needrestart || true) \
     && pgext env repo --mirror \
+    && apt-get update \
     && pgext env tool \
     && pgext env spec --mirror \
-    && pgext env rust --mirror \
-    && pgext env pgrx --pgrx 0.19.3 \
+    && pgext env rust --mirror && pgext env pgrx --pgrx 0.19.3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

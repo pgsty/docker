@@ -40,10 +40,11 @@ rm-base:
 commit-build:
 	docker stop $(CTN_UPDATE)
 	docker commit $(CTN_UPDATE) $(IMG):build
-	docker tag $(IMG):build $(IMG):latest
-	docker tag $(IMG):build $(IMG)
 	docker rm $(CTN_UPDATE)
-refresh-build: run-update update-build commit-build
+refresh-build:
+	$(MAKE) run-update
+	$(MAKE) update-build
+	$(MAKE) commit-build
 
 # Specs
 meta: exts spec

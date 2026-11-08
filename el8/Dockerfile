@@ -9,6 +9,8 @@ RUN groupadd -g 26 postgres && useradd -u 26 -g 26 -m -s /bin/bash postgres
 
 RUN printf '\nminrate=1\ntimeout=300\nretries=10\n' >> /etc/dnf/dnf.conf
 
+RUN sed -ri -e 's!^mirrorlist=!#mirrorlist=!g' -e 's!^#baseurl=http://dl.rockylinux.org/\$contentdir/!baseurl=https://mirrors.aliyun.com/rockylinux/!g' /etc/yum.repos.d/[Rr]ocky*.repo
+
 RUN dnf install -y \
     systemd openssh-server openssh-clients sudo passwd \
     glibc-langpack-en glibc-locale-source tzdata ca-certificates curl wget \
